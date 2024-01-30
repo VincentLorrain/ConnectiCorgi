@@ -1,5 +1,6 @@
 # ConnectiCORGI Game
 
+[View it on CodePen](https://codepen.io/vincent-lorrain/pen/WNmMpzx)
 
 ## Warning: Alpha Version
 

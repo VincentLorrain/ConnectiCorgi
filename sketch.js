@@ -652,9 +652,7 @@ class Game{
     background(255); // clear
     let playGround = new PlayGround(this.numRows,this.numCols,this.cardSize,this.combinations[0]);
     //
-    translate(3*this.cardSize,5*this.cardSize);
-
-
+    translate(this.cardSize,this.cardSize);
     this.drawAndNumberBorderSquares(this.numRows, this.numCols, this.cardSize,this.matrix);
     
     playGround.display(this.mask); 
@@ -665,31 +663,7 @@ class Game{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let currentState = "Draw"; // Initial state
+let currentState = "Init"; // Initial state
 ///////////////////////////////
 // Define number of element 
 let numRows= 5;
@@ -699,12 +673,12 @@ let cardSize = 60;
 
 
 function setup() {
-    createCanvas(600, 1000); // Adjust the canvas size as needed
+    createCanvas(windowWidth, windowHeight);
+    cardSize = Math.min(windowWidth, windowHeight) / (Math.max(numCols,numRows)+2);
     background(220); // Set the background color
-    //noLoop(); // We don't need to continuously redraw the canvas 
+    
 }
 
-  
 function draw() {
    
 
@@ -712,18 +686,13 @@ function draw() {
     switch (currentState) {
         case "Init":
           
-            currentState = "Draw"
-            
-            break;
-            
-        case "Draw":
             let connectionMap = new Game(numRows,numCols,cardSize);
             connectionMap.display();
-            currentState = "stop"
+            currentState = "Stop"
             break;
 
-        case "stop":
-
+        case "Stop":
+            ////
             break;
     
     }

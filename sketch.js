@@ -73,59 +73,49 @@ class Card {
     }
     
     getInfo(){
-      return this.shape+this.rotation;
+      return this.shape;
     }
     
     display(){
       
   
       push(); // Save the current transformation matrix
-      fill(color(6,78,20,255));
-      stroke(255);
-      strokeWeight(this.size/16);
+      fill(color(200,200,200,255));
+      //stroke(255);
+      
       // Add rounded edges to the square card
       let cornerRadius = this.size/16;
-      
+      strokeWeight(0);
+      translate(this.size/16, this.size/16);
+      rect(0, 0, this.size-this.size/8, this.size-this.size/8, cornerRadius);
+      translate(-this.size/16, -this.size/16);
       //
       //move
       //
-      translate(this.size / 2, this.size / 2);
-      switch (this.rotation) {
-  
-          case "O":
-            rotate(radians(90));
-          case "S":
-            rotate(radians(90));
-          case "E":
-            rotate(radians(90));
-          case "N":
-  
-      }
-      translate(- this.size / 2, -this.size / 2);
-  
-      //base
-      rect(0, 0, this.size, this.size, cornerRadius);
-  
- 
-
-      stroke(color(254,193,20,255));//rgb(254,193,7)
+      strokeWeight(this.size/16);
+      stroke(color(0,0,0,255));//rgb(254,193,7)
       //the base ligne 
-      line(0,  this.size / 2,  this.size/4, this.size / 2); 
-      line( this.size / 2, 0, this.size / 2, this.size/4); 
+      line(-this.size/16,  this.size/2,  this.size/4, this.size/2); 
+      line( this.size / 2, -this.size/16, this.size / 2, this.size/4 ); 
 
-      line(3*this.size/4, this.size / 2, this.size,  this.size / 2);
-      line(this.size / 2, 3*this.size/4,  this.size / 2,  this.size); 
+      line(3*this.size/4, this.size / 2, this.size+this.size/16,  this.size / 2);
+      line(this.size / 2, 3*this.size/4,  this.size / 2,  this.size+this.size/16); 
   
       switch (this.shape) {
+          case "C":
+            
+            line(this.size/4,this.size / 2, this.size / 2, this.size-this.size/4 );
+            line(this.size-this.size/4, this.size / 2,this.size / 2,  this.size/4); 
+          break;
+
           case "A":
             line(this.size/4,this.size / 2,  this.size / 2,  this.size/4);
             line(this.size-this.size/4, this.size / 2,this.size / 2, this.size-this.size/4); 
           break;
+
           case "B":
             line( this.size/4, this.size / 2, (3*this.size)/4,  this.size / 2);
-      
             //line( this.size / 2,  this.size/4,  this.size / 2, (3*this.size)/4  );
-           
             line( this.size / 2, this.size/4, this.size / 2, this.size/4+this.size/8); 
             line( this.size / 2, 3*this.size/4, this.size / 2, 3*this.size/4 -this.size/8); 
           break;
@@ -136,6 +126,7 @@ class Card {
   
       }
   
+
       if(this.masked){
         push();
         strokeWeight(0);
@@ -171,7 +162,7 @@ class PlayGround{
               }else if (configuration[i+(j*this.numRows)] === 1){
                 this.cardMatrix[i][j] = new Card(this.cardSize,"A","N");
               }else{
-                this.cardMatrix[i][j] = new Card(this.cardSize,"A","E");
+                this.cardMatrix[i][j] = new Card(this.cardSize,"C","E");
               }
             }
         }
@@ -309,8 +300,7 @@ class PlayGround{
         let nextDir = "";
         switch (this.cardMatrix[initVect.i][initVect.j].getInfo()) {
     
-            case "AS":
-            case "AN":
+            case "A":
             //      N
             //      | __E
             // O __/ /
@@ -332,9 +322,7 @@ class PlayGround{
             }
             break;
     
-    
-            case "AE":
-            case "AO":
+            case "C":
             //       N
             //  O __ | 
             //      \ \__E
@@ -356,10 +344,7 @@ class PlayGround{
             }
             break;
     
-            case "BN":
-            case "BS":
-            case "BE":
-            case "BO":  
+            case "B":
             //    N
             //    |
             // O--+--E
@@ -666,7 +651,7 @@ class Game{
 let currentState = "Init"; // Initial state
 ///////////////////////////////
 // Define number of element 
-let numRows= 5;
+let numRows= 10;
 let numCols =5;
 let cardSize = 60;
 

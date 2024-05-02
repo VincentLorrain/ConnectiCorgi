@@ -1,3 +1,27 @@
+
+  
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+	
+	-webkit-print-color-adjust:exact !important;
+	print-color-adjust:exact !important;
+}
+
+
+.a4{
+    width: 210mm;
+    height: 297mm;
+    margin: auto;
+    box-shadow: 0 0 5mm rgba(0,0,0,0.2); /* Adjusted box shadow */
+    background: white;
+    page-break-after: always; /* Ensures each A4 page is separate */
+}
+
+
+
 /* styles.css */
 .card .my-line {
     stroke: rgb(2, 2, 2);
@@ -33,4 +57,26 @@
 
 .border .my-text{
     fill: rgba(0, 0, 0, 0.158);
+}
+
+/*page A4*/
+@page {
+	size: A4;
+	margin: 0;
+}
+@media print {
+	html, body {
+		width: 210mm;
+		height: 297mm;        
+	}
+	.page {
+		margin: 0;
+		border: initial;
+		border-radius: initial;
+		width: initial;
+		min-height: initial;
+		box-shadow: initial;
+		background: initial;
+		page-break-after: always;
+	}
 }

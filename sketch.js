@@ -695,13 +695,20 @@ function createSVGElement(tagName) {
   //////////////////////////////////////////////////////
   //MAIN
   /////////////////////////////////////////////////////
-  const size = 100;
+
   
   document.addEventListener("DOMContentLoaded", function() {
     
       // Get the SVG container and append the circle to it
-      let svg = document.getElementById("mySVG");
-  
-      let aa = new Game(5,5,50);
-      aa.display(svg)
+      let nbTilesX = 5;
+      let nbTilesY = 5;
+      let svgElement = document.getElementById("TheGame");
+
+      let svgWidth = svgElement.getBoundingClientRect().width;
+      let svgHeight = svgElement.getBoundingClientRect().height;
+
+      const size =  Math.min(svgWidth/(nbTilesX+2.2), svgHeight/(nbTilesY+2.2));
+
+      let aa = new Game(5,5,size);
+      aa.display(svgElement)
   });

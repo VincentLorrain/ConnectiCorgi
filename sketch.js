@@ -134,17 +134,66 @@ function createSVGElement(tagName) {
   /////////////////////////////////////////////////////
   
   
-  class Card {
-      constructor(x,y,size,shape) {
-          this.x = x*size;
-          this.y = y*size;
-          this.size =size;
-          this.shape = shape;
-          this.masked = false;
-      }
+    class Card {
+        constructor(x,y,size,shape) {
+            this.x = x*size;
+            this.y = y*size;
+            this.size =size;
+            this.shape = shape;
+            this.masked = false;
+            this.el = null;      // reference to the SVG group element
+            this.userShape = null; // user selected shape when masked
+        }
       
       flipMask(){
          this.masked = ! this.masked;
+      }
+
+      // Cycle through possible shapes when card is masked
+      cycleShape(){
+         const shapes = ['A','B','C'];
+         if(this.userShape === null){
+            this.userShape = shapes[0];
+         }else{
+            let idx = shapes.indexOf(this.userShape);
+            idx = (idx + 1) % shapes.length;
+            this.userShape = shapes[idx];
+         }
+         this.redraw();
+      }
+
+      // Redraw the card based on current state
+      redraw(){
+         if(!this.el){
+            return;
+         }
+         while(this.el.firstChild){
+            this.el.removeChild(this.el.firstChild);
+         }
+         createRectangle(this.el, this.size, this.size);
+         createLine(this.el, -this.size/16, this.size/2, this.size/4, this.size/2);
+         createLine(this.el, this.size / 2, -this.size/16, this.size / 2, this.size/4);
+         createLine(this.el,3*this.size/4, this.size / 2, this.size+this.size/16,  this.size / 2);
+         createLine(this.el,this.size / 2, 3*this.size/4,  this.size / 2,  this.size+this.size/16);
+
+         let drawShape = (!this.masked) ? this.shape : this.userShape;
+         if(drawShape){
+            switch (drawShape) {
+                case 'C':
+                    createLine(this.el,this.size/4,this.size / 2, this.size / 2, this.size-this.size/4 );
+                    createLine(this.el,this.size-this.size/4, this.size / 2,this.size / 2,  this.size/4);
+                    break;
+                case 'A':
+                    createLine(this.el,this.size/4,this.size / 2,  this.size / 2,  this.size/4);
+                    createLine(this.el,this.size-this.size/4, this.size / 2,this.size / 2, this.size-this.size/4);
+                    break;
+                case 'B':
+                    createLine(this.el, this.size/4, this.size / 2, (3*this.size)/4,  this.size / 2);
+                    createLine(this.el, this.size / 2, this.size/4, this.size / 2, this.size/4+this.size/8);
+                    createLine(this.el, this.size / 2, 3*this.size/4, this.size / 2, 3*this.size/4 -this.size/8);
+                    break;
+            }
+         }
       }
       
       getInfo(){
@@ -152,41 +201,8 @@ function createSVGElement(tagName) {
       }
       
       display(svg){
-        
-          let group = createGroup(svg,"card", `translate(${this.x}, ${this.y})`);
-      
-          //svg.appendChild(rect);
-          createRectangle(group, this.size, this.size);
-          createLine(group, -this.size/16, this.size/2, this.size/4, this.size/2);
-          createLine(group, this.size / 2, -this.size/16, this.size / 2, this.size/4);
-      
-          createLine(group,3*this.size/4, this.size / 2, this.size+this.size/16,  this.size / 2);
-          createLine(group,this.size / 2, 3*this.size/4,  this.size / 2,  this.size+this.size/16);
-          
-          if(!this.masked){
-              switch (this.shape) {
-                  case "C":
-                  
-                  createLine(group,this.size/4,this.size / 2, this.size / 2, this.size-this.size/4 );
-                  createLine(group,this.size-this.size/4, this.size / 2,this.size / 2,  this.size/4); 
-                  break;
-          
-                  case "A":
-                      createLine(group,this.size/4,this.size / 2,  this.size / 2,  this.size/4);
-                      createLine(group,this.size-this.size/4, this.size / 2,this.size / 2, this.size-this.size/4);
-                  break;
-          
-                  case "B":
-                      createLine(group, this.size/4, this.size / 2, (3*this.size)/4,  this.size / 2);
-                  //line( this.size / 2,  this.size/4,  this.size / 2, (3*this.size)/4  );
-                  createLine(group, this.size / 2, this.size/4, this.size / 2, this.size/4+this.size/8);
-                  createLine(group, this.size / 2, 3*this.size/4, this.size / 2, 3*this.size/4 -this.size/8);
-                  break;
-          
-                  default:
-                  break;
-              }
-        }
+          this.el = createGroup(svg,"card", `translate(${this.x}, ${this.y})`);
+          this.redraw();
       }
   }
   /////////////////////////////////////////////
@@ -294,7 +310,7 @@ function createSVGElement(tagName) {
           let group = createGroup(svg,"bord"," translate(0, 0)");
           this.drawCards(group,mask);
       }
-      
+
       drawCards(svg,mask){
           // plot the number also
           //const txSize = this.cardSize/3;
@@ -306,7 +322,38 @@ function createSVGElement(tagName) {
                   this.cardMatrix[i][j].display(svg);
               }
           }
-  
+
+      }
+
+      // attach click handlers to masked cards
+      attachHandlers(callback){
+          for (let i = 0; i < this.numRows; i++) {
+              for (let j = 0; j < this.numCols; j++) {
+                  const card = this.cardMatrix[i][j];
+                  if(card.masked && card.el){
+                      card.el.style.cursor = 'pointer';
+                      card.el.addEventListener('click', ()=>{
+                          card.cycleShape();
+                          if(this.allGuessed() && typeof callback === 'function'){
+                              callback();
+                          }
+                      });
+                  }
+              }
+          }
+      }
+
+      // check if all masked cards have a userShape
+      allGuessed(){
+          for (let i = 0; i < this.numRows; i++) {
+              for (let j = 0; j < this.numCols; j++) {
+                  const card = this.cardMatrix[i][j];
+                  if(card.masked && !card.userShape){
+                      return false;
+                  }
+              }
+          }
+          return true;
       }
       
       drawPath(initVect){
@@ -677,13 +724,31 @@ function createSVGElement(tagName) {
     
       display(svg){
         let group = createGroup(svg,"game", `translate(${this.cardSize}, ${this.cardSize})`);
-        let playGround = new PlayGround(this.numRows,this.numCols,this.cardSize,this.combinations[0]);
-        //
-        //translate(this.cardSize,this.cardSize);
-        
+        this.playGround = new PlayGround(this.numRows,this.numCols,this.cardSize,this.combinations[0]);
+
         let group2 = createGroup(group,"game", "translate(0, 0)");
-        playGround.display(group2,this.mask); 
+        this.playGround.display(group2,this.mask);
+        this.playGround.attachHandlers(()=>{
+            const btn = document.getElementById('validateBtn');
+            if(btn){ btn.disabled = false; }
+        });
         this.drawAndNumberBorderSquares(group,this.numRows, this.numCols, this.cardSize,this.matrix);
+      }
+
+      // verify user guesses against the solution
+      validate(){
+        let ok = true;
+        for (let i = 0; i < this.playGround.numRows; i++) {
+            for (let j = 0; j < this.playGround.numCols; j++) {
+                const card = this.playGround.cardMatrix[i][j];
+                if(card.masked){
+                    if(card.userShape !== card.shape){
+                        ok = false;
+                    }
+                }
+            }
+        }
+        alert(ok ? 'Correct!' : 'Wrong configuration');
       }
     }
     
@@ -710,5 +775,10 @@ function createSVGElement(tagName) {
       const size =  Math.min(svgWidth/(nbTilesX+2.2), svgHeight/(nbTilesY+2.2));
 
       let aa = new Game(5,5,size);
-      aa.display(svgElement)
+      aa.display(svgElement);
+
+      const validateBtn = document.getElementById('validateBtn');
+      if(validateBtn){
+          validateBtn.addEventListener('click', ()=> aa.validate());
+      }
   });

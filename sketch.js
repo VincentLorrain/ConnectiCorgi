@@ -507,28 +507,31 @@ function createSVGElement(tagName) {
       generateMaskedCombinations(stateArray, mask) {
         const result = [];
         const mutableIndices = [];
-      
+
         // Identify the mutable indices based on the mask
         for (let i = 0; i < mask.length; i++) {
             if (mask[i]) {
                 mutableIndices.push(i);
             }
         }
-      
-        function generate(currentIndex) {
+
+        // Recursive helper that builds combinations without mutating the
+        // original input array.
+        function generate(currentIndex, currentState) {
             if (currentIndex === mutableIndices.length) {
-                result.push(stateArray.slice());
+                result.push(currentState.slice());
                 return;
             }
-      
-            let mutableIndex = mutableIndices[currentIndex];
+
+            const mutableIndex = mutableIndices[currentIndex];
             for (let i = 0; i < 3; i++) {
-                stateArray[mutableIndex] = i;
-                generate(currentIndex + 1);
+                const nextState = currentState.slice();
+                nextState[mutableIndex] = i;
+                generate(currentIndex + 1, nextState);
             }
         }
-      
-        generate(0);
+
+        generate(0, stateArray.slice());
         return result;
       }
       

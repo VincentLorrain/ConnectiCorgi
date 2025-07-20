@@ -170,6 +170,17 @@ function createSVGElement(tagName) {
          while(this.el.firstChild){
             this.el.removeChild(this.el.firstChild);
          }
+         // update class based on current state
+         let cls = 'card';
+         if(this.masked){
+            if(this.userShape === null){
+               cls += ' masked';
+            }else{
+               cls += ' user-guess';
+            }
+         }
+         this.el.setAttribute('class', cls);
+
          createRectangle(this.el, this.size, this.size);
          createLine(this.el, -this.size/16, this.size/2, this.size/4, this.size/2);
          createLine(this.el, this.size / 2, -this.size/16, this.size / 2, this.size/4);

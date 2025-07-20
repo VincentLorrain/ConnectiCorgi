@@ -36,6 +36,23 @@ body {
     ry : 10;
 }
 
+/* when a card is masked but not yet guessed */
+.card.masked .my-line {
+    stroke: rgb(180, 180, 180);
+}
+.card.masked .my-rect {
+    fill: rgb(240, 240, 240);
+    stroke: rgb(150, 150, 150);
+}
+
+/* when player has selected a shape for a masked card */
+.card.user-guess .my-line {
+    stroke: rgb(0, 123, 255);
+}
+.card.user-guess .my-rect {
+    stroke: rgb(0, 123, 255);
+}
+
 
 .array .my-rect {
     fill: rgba(0, 0, 255, 0);

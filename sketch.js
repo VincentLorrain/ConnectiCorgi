@@ -512,6 +512,8 @@ function createSVGElement(tagName) {
         this.deletionCounts = [];
         //the posibilities
         this.matrix = [];
+        // keep board specific connection maps for later pruning
+        this.connectionMaps = [];
         
     
         //generation and level ?
@@ -526,11 +528,13 @@ function createSVGElement(tagName) {
         
     
     
-        //generate all PlayGround to have the input / output connection 
+        //generate all PlayGround to have the input / output connection
         this.combinations.forEach((combination, index) => {
-          //console.log(`Combination ${index}:`, combination);
           let connectionMap = new PlayGround(numRows,numCols,cardSize,combination).connectionR;
-          this.matrix.push(connectionMap) ;
+          // store raw connection map per board
+          this.connectionMaps.push(connectionMap);
+          // copy into matrix for transpose/processing
+          this.matrix.push(connectionMap.slice());
         });
     
     
@@ -550,13 +554,9 @@ function createSVGElement(tagName) {
         }
     
     
-        /// mke it resolvable
-        // the idear is to suppres somme of the posibility and 
-        // the only left is the first one 
-        for (let i = 0; i < this.matrix.length; i++) {
-          this.deleteRandomElements(this.matrix[i],Math.ceil(sizeOfAmbiguous/numberOfAmbiguous));
-          this.matrix[i].sort(function(a, b) {return a - b;});
-        }
+        /// make it resolvable by pruning possibilities until only the first
+        /// combination remains possible
+        this.pruneUntilUnique();
     
     
       }
@@ -637,6 +637,49 @@ function createSVGElement(tagName) {
       
       removeDuplicates(array) {
         return Array.from(new Set(array));
+      }
+
+      pruneUntilUnique(){
+        const getCandidates = () => {
+          let candidates = [];
+          for(let b=0; b<this.connectionMaps.length; b++){
+            let possible = true;
+            for(let e=0; e<this.matrix.length; e++){
+              if(!this.matrix[e].includes(this.connectionMaps[b][e])){
+                possible = false;
+                break;
+              }
+            }
+            if(possible){
+              candidates.push(b);
+            }
+          }
+          return candidates;
+        };
+
+        let candidates = getCandidates();
+        while(candidates.length > 1){
+          let pruned = false;
+          for(let cIndex=1; cIndex<candidates.length && !pruned; cIndex++){
+            const boardIdx = candidates[cIndex];
+            for(let e=0; e<this.matrix.length && !pruned; e++){
+              const val = this.connectionMaps[boardIdx][e];
+              const idx = this.matrix[e].indexOf(val);
+              if(idx > 0 && this.matrix[e].length > 1){
+                this.matrix[e].splice(idx,1);
+                pruned = true;
+              }
+            }
+          }
+
+          if(!pruned){
+            break;
+          }
+          for(let e=0; e<this.matrix.length; e++){
+            this.matrix[e].sort(function(a,b){return a-b;});
+          }
+          candidates = getCandidates();
+        }
       }
       
     
